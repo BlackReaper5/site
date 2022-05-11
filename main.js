@@ -7,6 +7,7 @@ const fov = 100;
 const aspect = window.innerWidth / window.innerHeight;
 const near = 1;
 const far = 1000;
+var current_state = "paused";
 
 const clock = new THREE.Clock();
 const speed = 2;
@@ -44,16 +45,16 @@ function initWorld() {
 
 
 
-  // Controls
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.listenToKeyEvents(window); // optional
-  //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
-  controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.05;
-  controls.screenSpacePanning = false;
-  // controls.minDistance = 100;
-  // controls.maxDistance = 400;
-  controls.maxPolarAngle = Math.PI / 2;
+  // // Controls
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.listenToKeyEvents(window); // optional
+  // //controls.addEventListener( 'change', render ); // call this only in static scenes (i.e., if there is no animation loop)
+  // controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
+  // controls.dampingFactor = 0.05;
+  // controls.screenSpacePanning = false;
+  // // controls.minDistance = 100;
+  // // controls.maxDistance = 400;
+  // controls.maxPolarAngle = Math.PI / 2;
 
 
 
@@ -101,11 +102,12 @@ function initWorld() {
 
 function onForward() {
   console.log("Go forward")
-  player.translateZ(10);
+  current_state = "forward";
 }
 
 function onBackward() {
   console.log("Go backward")
+  current_state = "backward";
 }
 
 function render() {
@@ -138,7 +140,7 @@ function onWindowResize() {
 
 function followCamera() {
   //Offset from camera to player
-  var relativeCameraOffset = new THREE.Vector3(0, 5, 10);
+  var relativeCameraOffset = new THREE.Vector3(0, 10, 12);
 
   //UPDATE PLAYER WORLD MATRIX FOR PERFECT CAMERA FOLLOW
   player.updateMatrixWorld()
@@ -151,28 +153,41 @@ function followCamera() {
   // camera.position.z = cameraOffset.z;
 
   //SMOOTH CAMERA POSITION TO TARGET POSITION
-  camera.position.lerp(cameraOffset, 0.1);
+  camera.position.lerp(cameraOffset, 0.5);
   camera.lookAt(player.position);
 }
 
 function initPlayer() {
   //Create player object
-  const geometry = new THREE.BoxGeometry(2, 5, 5);
-  const material = new THREE.MeshStandardMaterial({ color: 0xff6347 });
-  player = new THREE.Mesh(geometry, material);
-  player.position.set(0, 0, 300);
-  player.position.needsUpdate = true;
-
-  // add the object to the scene
-  scene.add(player);
+  player = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 1 ), new THREE.MeshLambertMaterial( { color: 0x9797CE } ) );
+  player.position.y = 0.5;
+  player.position.z = 100;
+  player.position.needsUpdate = true; 
+// add the object to the scene
+  scene.add( player );
 }
 
 function update(time) {
+  if (current_state == "paused") {}
+  else if (current_state == "forward") {
+    player.translateZ(-1);
+  }
+  else if (current_state == "backward") { 
+    player.translateZ(1);
+  }
+  if (player.position.z < cube.position.z + 20) {
+    current_state = "paused";
+  }
+
+  if (player.position.z > cube.position.z + 200) {
+    current_state = "paused";
+  }
+
   //UPDATE CAMERA POSITION
   followCamera();
 
   //UPDATE RENDER
   render();
-  controls.update();
+  // controls.update();
   requestAnimationFrame(update);
 }
