@@ -40,3 +40,5 @@ button:active {
   width: 100%;
   text-align: center;
 }
+
+html, body {margin: 0; height: 100%; overflow: hidden}
